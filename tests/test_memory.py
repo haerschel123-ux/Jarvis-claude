@@ -8,7 +8,12 @@ from core.config import Settings
 from core.enums import MemoryKind, MemoryMode
 from memory import secrets_filter
 from memory.database import Database
-from memory.manager import MemoryCandidate, MemoryManager, extract_candidates, parse_model_candidates
+from memory.manager import (
+    MemoryCandidate,
+    MemoryManager,
+    extract_candidates,
+    parse_model_candidates,
+)
 from memory.retrieval import MemoryRetrieval, build_match_query, similarity
 
 
