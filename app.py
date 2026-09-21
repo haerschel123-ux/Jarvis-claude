@@ -22,14 +22,24 @@ from fastapi.staticfiles import StaticFiles
 
 load_dotenv()  # development convenience; the packaged app uses the OS credential store
 
-from api import ws_events  # noqa: E402
+from api import routes_chat, routes_models, routes_settings, ws_events  # noqa: E402
 from core import health  # noqa: E402
 from core.config import get_settings, settings_store  # noqa: E402
+from core.errors import (  # noqa: E402
+    ConfigurationError,
+    FeatureUnavailable,
+    JarvisError,
+    NoModelAvailable,
+    PermissionDenied,
+    ProviderUnavailable,
+    RateLimited,
+)
 from core.events import EventType, event_bus  # noqa: E402
 from core.logging_setup import get_logger, setup_logging  # noqa: E402
 from core.paths import PATHS  # noqa: E402
 from core.platform_info import summary as platform_summary  # noqa: E402
 from memory.database import db  # noqa: E402
+from providers.catalog import catalog  # noqa: E402
 
 VERSION = "0.1.0"
 
@@ -41,6 +51,15 @@ START_TIME = time.time()
 async def _startup_background(app: FastAPI) -> None:
     """Checks that may be slow. Failures are logged, never fatal."""
     try:
+        # Refresh the model catalogue only when it is stale, so startup stays fast and a
+        # provider outage never delays the window appearing (Spec §82).
+        try:
+            if await catalog.is_stale():
+                await catalog.refresh()
+                event_bus.emit(EventType.MODELS_REFRESHED, total=await catalog.count_all())
+        except Exception:
+            log.exception("Modellkatalog konnte beim Start nicht aktualisiert werden")
+
         result = await health.run_all()
         app.state.health = result
         event_bus.emit(EventType.HEALTH_UPDATED, overall=result["overall"],
@@ -68,6 +87,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         log.info("Datenbankmigrationen angewendet: %s", applied)
 
     health.register_builtin_checks()
+    catalog.configure(settings)
+    health.register_check("providers", _provider_health)
 
     app.state.settings = settings
     app.state.health = {"overall": "unknown", "checks": {}, "errors": [], "warnings": []}
@@ -84,8 +105,37 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await task
+        await catalog.close()
         await db.close()
         log.info("JARVIS wurde beendet")
+
+
+async def _provider_health() -> health.HealthResult:
+    """Report provider reachability (Spec §83) without failing startup when one is down."""
+    statuses = await catalog.provider_statuses()
+    detail = {s.name: {"available": s.available, "reason": s.reason} for s in statuses}
+    if not statuses:
+        return health.HealthResult(
+            "providers", True, "warn", "Kein KI-Anbieter konfiguriert", detail
+        )
+    reachable = [s for s in statuses if s.available]
+    if not reachable:
+        return health.HealthResult(
+            "providers", False, "error",
+            "Kein KI-Anbieter erreichbar: "
+            + "; ".join(f"{s.label} ({s.reason})" for s in statuses),
+            detail,
+        )
+    if len(reachable) < len(statuses):
+        return health.HealthResult(
+            "providers", True, "warn",
+            "Nicht erreichbar: "
+            + ", ".join(f"{s.label} ({s.reason})" for s in statuses if not s.available),
+            detail,
+        )
+    return health.HealthResult(
+        "providers", True, "ok", ", ".join(f"{s.label}: {s.reason}" for s in statuses), detail
+    )
 
 
 def create_app() -> FastAPI:
@@ -109,10 +159,43 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    _register_exception_handlers(app)
     app.include_router(ws_events.router)
+    app.include_router(routes_chat.router)
+    app.include_router(routes_models.router)
+    app.include_router(routes_settings.router)
     _register_core_routes(app)
     _mount_web_ui(app)
     return app
+
+
+# JarvisError subclasses carry a user-facing explanation; a bare 500 would throw it away.
+ERROR_STATUS: dict[type[JarvisError], int] = {
+    ConfigurationError: 400,
+    PermissionDenied: 403,
+    NoModelAvailable: 409,
+    FeatureUnavailable: 501,
+    RateLimited: 429,
+    ProviderUnavailable: 503,
+}
+
+
+def _status_for(exc: JarvisError) -> int:
+    for error_type, status in ERROR_STATUS.items():
+        if isinstance(exc, error_type):
+            return status
+    return 500
+
+
+def _register_exception_handlers(app: FastAPI) -> None:
+    @app.exception_handler(JarvisError)
+    async def jarvis_error_handler(request, exc: JarvisError):  # noqa: ANN001
+        status = _status_for(exc)
+        if status >= 500:
+            log.error("%s: %s", type(exc).__name__, exc)
+        else:
+            log.info("%s: %s", type(exc).__name__, exc)
+        return JSONResponse(exc.to_dict(), status_code=status)
 
 
 def _register_core_routes(app: FastAPI) -> None:

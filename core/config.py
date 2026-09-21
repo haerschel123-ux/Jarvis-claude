@@ -105,6 +105,11 @@ class ProviderSettings(BaseModel):
     custom_enabled: bool = False
     custom_base_url: str = ""
     custom_label: str = "Custom API"
+    # An OpenAI-compatible endpoint publishes no pricing, so it counts as paid by default —
+    # the safe direction under FREE_ONLY. Users running a local server (LM Studio,
+    # llama.cpp, vLLM) turn these on to make it usable under the free-only policy.
+    custom_is_free: bool = False
+    custom_is_local: bool = False
     # Optional attribution headers OpenRouter uses for its app ranking.
     app_referer: str = "https://github.com/haerschel123-ux/Jarvis-claude"
     app_title: str = "JARVIS"

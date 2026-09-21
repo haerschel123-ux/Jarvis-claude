@@ -89,6 +89,10 @@ class Database:
             return self._conn
         self.path.parent.mkdir(parents=True, exist_ok=True)
         conn = await aiosqlite.connect(self.path, isolation_level=None)
+        # The lock is (re)created here rather than in __init__ so it always belongs to the
+        # loop that will actually use it. A module-level Database created at import time would
+        # otherwise bind its lock to whichever loop touched it first and fail in every other.
+        self._lock = asyncio.Lock()
         conn.row_factory = aiosqlite.Row
         await conn.execute("PRAGMA journal_mode=WAL")
         await conn.execute("PRAGMA foreign_keys=ON")
