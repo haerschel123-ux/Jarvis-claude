@@ -22,8 +22,15 @@ from fastapi.staticfiles import StaticFiles
 
 load_dotenv()  # development convenience; the packaged app uses the OS credential store
 
-from api import routes_chat, routes_models, routes_settings, ws_events  # noqa: E402
+from api import (  # noqa: E402
+    routes_chat,
+    routes_models,
+    routes_settings,
+    routes_tools,
+    ws_events,
+)
 from core import health  # noqa: E402
+from core.assistant import assistant  # noqa: E402
 from core.config import get_settings, settings_store  # noqa: E402
 from core.errors import (  # noqa: E402
     ConfigurationError,
@@ -40,6 +47,8 @@ from core.paths import PATHS  # noqa: E402
 from core.platform_info import summary as platform_summary  # noqa: E402
 from memory.database import db  # noqa: E402
 from providers.catalog import catalog  # noqa: E402
+from tools import register_default_tools  # noqa: E402
+from tools.registry import RegistryToolExecutor  # noqa: E402
 
 VERSION = "0.1.0"
 
@@ -88,6 +97,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     health.register_builtin_checks()
     catalog.configure(settings)
+
+    # Tools are registered once and handed to the assistant core, which then routes every
+    # model-issued tool call through the registry's permission and audit path.
+    register_default_tools()
+    assistant.set_tool_executor(RegistryToolExecutor())
     health.register_check("providers", _provider_health)
 
     app.state.settings = settings
@@ -164,6 +178,7 @@ def create_app() -> FastAPI:
     app.include_router(routes_chat.router)
     app.include_router(routes_models.router)
     app.include_router(routes_settings.router)
+    app.include_router(routes_tools.router)
     _register_core_routes(app)
     _mount_web_ui(app)
     return app
