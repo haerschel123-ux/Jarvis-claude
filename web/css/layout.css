@@ -1,0 +1,285 @@
+/* The application frame (Spec §55): topbar, navigation, chat, activity panel, composer. */
+
+.app {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: var(--topbar-h) 1fr;
+  grid-template-columns: var(--nav-w) minmax(0, 1fr) var(--activity-w);
+  grid-template-areas:
+    "topbar topbar topbar"
+    "nav    main   activity";
+  height: 100dvh;
+  width: 100%;
+}
+
+.app[data-activity="hidden"] {
+  grid-template-columns: var(--nav-w) minmax(0, 1fr) 0;
+}
+.app[data-activity="hidden"] .activity { display: none; }
+
+/* --- topbar ------------------------------------------------------------------------- */
+
+.topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: 0 var(--pad);
+  border-bottom: 1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(11, 15, 22, 0.92), rgba(7, 9, 14, 0.72));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  font-size: var(--fs-md);
+}
+
+.brand__mark {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.brand__name {
+  background: linear-gradient(120deg, var(--text) 10%, var(--accent-bright) 55%, var(--text) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.topbar__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* --- navigation --------------------------------------------------------------------- */
+
+.nav {
+  grid-area: nav;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--gap);
+  border-right: 1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(11, 15, 22, 0.5), rgba(7, 9, 14, 0.2));
+  overflow-y: auto;
+}
+
+.nav__group-label {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-mute);
+  padding: 14px 10px 6px;
+}
+
+.nav__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 11px;
+  border-radius: var(--r-md);
+  color: var(--text-soft);
+  font-size: var(--fs-base);
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  text-align: left;
+  width: 100%;
+}
+
+.nav__item:hover { background: var(--glass); color: var(--text); }
+
+.nav__item[aria-current="page"] {
+  background: linear-gradient(90deg, var(--accent-dim), transparent 85%);
+  color: var(--text);
+}
+
+/* The active marker slides rather than jumping between items. */
+.nav__item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  translate: 0 -50%;
+  width: 3px;
+  height: 20px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.nav__icon { flex: none; width: 18px; height: 18px; opacity: 0.85; }
+.nav__item[aria-current="page"] .nav__icon { opacity: 1; color: var(--accent); }
+
+.nav__badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--r-full);
+  background: var(--accent-dim);
+  color: var(--accent-bright);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+}
+
+.nav__footer { margin-top: auto; padding-top: var(--gap); }
+
+/* --- main --------------------------------------------------------------------------- */
+
+.main {
+  grid-area: main;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.view {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fade-in var(--t-base) var(--ease) both;
+}
+
+.view__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--pad);
+  scroll-behavior: smooth;
+}
+
+.view__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: var(--pad) var(--pad) 0;
+  flex-wrap: wrap;
+}
+
+.view__title { font-size: var(--fs-xl); }
+.view__subtitle { color: var(--text-mute); font-size: var(--fs-sm); }
+
+/* --- activity panel ------------------------------------------------------------------ */
+
+.activity {
+  grid-area: activity;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(11, 15, 22, 0.5), rgba(7, 9, 14, 0.25));
+}
+
+.activity__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px var(--gap);
+  border-bottom: 1px solid var(--stroke);
+  flex-wrap: wrap;
+}
+
+/* The tabs have to fit a narrow panel, so they shrink rather than overflow and clip. */
+.activity__tabs { display: flex; gap: 2px; margin-left: auto; min-width: 0; }
+.activity__tabs .btn { padding: 3px 9px; font-size: var(--fs-xs); }
+
+.activity__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--gap);
+}
+
+/* --- responsive ---------------------------------------------------------------------- */
+
+@media (max-width: 1280px) {
+  .app { --activity-w: 280px; }
+}
+
+@media (max-width: 1080px) {
+  .app,
+  .app[data-activity="hidden"] {
+    grid-template-columns: var(--nav-w) minmax(0, 1fr);
+    grid-template-areas:
+      "topbar topbar"
+      "nav    main";
+  }
+  .activity {
+    position: fixed;
+    top: var(--topbar-h);
+    right: 0;
+    bottom: 0;
+    width: min(360px, 88vw);
+    z-index: 40;
+    transform: translateX(100%);
+    transition: transform var(--t-base) var(--ease-out);
+    box-shadow: var(--shadow-lg);
+    background: rgba(8, 11, 17, 0.97);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    display: flex;
+  }
+  .app[data-activity="open"] .activity { transform: none; }
+  .app[data-activity="hidden"] .activity { display: flex; }
+}
+
+/* Phone and tablet: the navigation becomes a drawer, the chat gets the whole screen. */
+@media (max-width: 760px) {
+  .app,
+  .app[data-activity="hidden"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "topbar"
+      "main";
+  }
+  .nav {
+    position: fixed;
+    top: var(--topbar-h);
+    left: 0;
+    bottom: 0;
+    width: min(280px, 82vw);
+    z-index: 45;
+    transform: translateX(-100%);
+    transition: transform var(--t-base) var(--ease-out);
+    background: rgba(8, 11, 17, 0.98);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+  }
+  .app[data-nav="open"] .nav { transform: none; }
+  .scrim {
+    position: fixed;
+    inset: var(--topbar-h) 0 0;
+    background: rgba(3, 5, 8, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 35;
+    animation: fade-in var(--t-fast) var(--ease) both;
+  }
+  :root { --pad: 14px; --gap: 12px; }
+}
+
+@media (min-width: 761px) {
+  .nav__toggle { display: none; }
+  .scrim { display: none; }
+}

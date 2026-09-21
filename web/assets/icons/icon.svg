@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="JARVIS">
+  <defs>
+    <radialGradient id="core" cx="42%" cy="36%">
+      <stop offset="0%" stop-color="#d7f6ff"/>
+      <stop offset="42%" stop-color="#4fd5ff"/>
+      <stop offset="100%" stop-color="#0e5f84"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4fd5ff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#4fd5ff" stop-opacity="0.15"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#07090e"/>
+  <g filter="url(#glow)">
+    <circle cx="256" cy="256" r="168" fill="none" stroke="url(#ring)" stroke-width="5"
+            stroke-dasharray="14 26" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="256" cy="256" r="132" fill="none" stroke="url(#ring)" stroke-width="8"
+            stroke-dasharray="160 260" stroke-linecap="round"/>
+    <circle cx="256" cy="256" r="72" fill="url(#core)"/>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+{
+  "name": "JARVIS — Persönlicher KI-Assistent",
+  "short_name": "JARVIS",
+  "description": "Sprachgesteuerter persönlicher KI-Assistent mit Gedächtnis, Agenten und PC-Steuerung",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07090e",
+  "theme_color": "#07090e",
+  "lang": "de",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "/assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Neue Unterhaltung", "url": "/#/chat" },
+    { "name": "Übersicht", "url": "/#/dashboard" },
+    { "name": "Einstellungen", "url": "/#/settings" }
+  ]
+}

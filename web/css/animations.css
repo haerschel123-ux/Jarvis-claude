@@ -1,0 +1,100 @@
+/* Shared keyframes. Every one of them is disabled under prefers-reduced-motion at the
+   bottom of this file — motion is decoration here, never information. */
+
+@keyframes aurora {
+  0%   { --aurora-x: 22%; --aurora-y: 18%; opacity: 0.55; }
+  50%  { opacity: 0.85; }
+  100% { --aurora-x: 78%; --aurora-y: 72%; opacity: 0.5; }
+}
+
+@property --aurora-x { syntax: "<percentage>"; inherits: true; initial-value: 30%; }
+@property --aurora-y { syntax: "<percentage>"; inherits: true; initial-value: 20%; }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.82); opacity: 0.75; }
+  70%  { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin-reverse { to { transform: rotate(-360deg); } }
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes blink-soft {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes caret {
+  0%, 45% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+
+@keyframes scan {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  40%  { opacity: 0.9; }
+  100% { transform: translateY(1200%); opacity: 0; }
+}
+
+.anim-rise { animation: rise-in var(--t-base) var(--ease-out) both; }
+.anim-fade { animation: fade-in var(--t-base) var(--ease) both; }
+.anim-pop  { animation: pop-in var(--t-fast) var(--ease-out) both; }
+
+/* A skeleton shimmer for anything still loading. */
+.skeleton {
+  background: linear-gradient(90deg, var(--glass) 25%, var(--glass-strong) 37%, var(--glass) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: var(--r-sm);
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* The same switch, available as a setting for people who want it off without changing
+   their operating system preference. */
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}

@@ -1,0 +1,120 @@
+/* JARVIS design tokens.
+   One dark, futuristic theme built from a small set of variables, so every surface, glow and
+   state colour stays consistent. No external font or asset is fetched: the UI must work
+   offline (Spec §74). */
+
+:root {
+  /* --- base surfaces: near-black with a cool blue cast ------------------------------- */
+  --bg-void: #05070b;
+  --bg-base: #07090e;
+  --bg-raised: #0b0f16;
+  --bg-sunken: #04060a;
+
+  /* Glass surfaces are translucent so the background grid and glows read through. */
+  --glass: rgba(255, 255, 255, 0.032);
+  --glass-strong: rgba(255, 255, 255, 0.055);
+  --glass-hover: rgba(255, 255, 255, 0.075);
+  --stroke: rgba(255, 255, 255, 0.075);
+  --stroke-strong: rgba(255, 255, 255, 0.13);
+
+  /* --- accent: ice blue -------------------------------------------------------------- */
+  --accent: #4fd5ff;
+  --accent-bright: #8ce6ff;
+  --accent-deep: #1b9fd0;
+  --accent-dim: rgba(79, 213, 255, 0.16);
+  --accent-faint: rgba(79, 213, 255, 0.07);
+  --accent-line: rgba(79, 213, 255, 0.35);
+
+  /* --- semantic state colours --------------------------------------------------------- */
+  --ok: #4ade80;
+  --ok-dim: rgba(74, 222, 128, 0.14);
+  --warn: #ffb547;
+  --warn-dim: rgba(255, 181, 71, 0.14);
+  --danger: #ff5c7a;
+  --danger-dim: rgba(255, 92, 122, 0.14);
+  --violet: #a78bfa;
+  --violet-dim: rgba(167, 139, 250, 0.14);
+
+  /* --- text --------------------------------------------------------------------------- */
+  --text: #e8eef7;
+  --text-soft: #a9b6c8;
+  --text-mute: #6b7a8f;
+  --text-faint: #46536440;
+
+  /* --- typography --------------------------------------------------------------------- */
+  --font: "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont,
+    "Inter", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", "SF Mono", Consolas,
+    "Liberation Mono", monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 12.5px;
+  --fs-base: 14px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+  --fs-2xl: 30px;
+
+  /* --- shape and depth ---------------------------------------------------------------- */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.65);
+  --shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.8);
+  --glow-accent: 0 0 0 1px var(--accent-dim), 0 0 28px -6px rgba(79, 213, 255, 0.55);
+  --glow-soft: 0 0 34px -12px rgba(79, 213, 255, 0.5);
+
+  /* --- layout ------------------------------------------------------------------------- */
+  --topbar-h: 56px;
+  --nav-w: 232px;
+  --activity-w: 320px;
+  --gap: 14px;
+  --pad: 18px;
+
+  /* --- motion -------------------------------------------------------------------------- */
+  --t-fast: 120ms;
+  --t-base: 220ms;
+  --t-slow: 420ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font-scale: 1;
+}
+
+/* Alternative accents, switchable in the settings. Everything else follows automatically. */
+:root[data-accent="amber"] {
+  --accent: #ffb547;
+  --accent-bright: #ffd08a;
+  --accent-deep: #c77f16;
+  --accent-dim: rgba(255, 181, 71, 0.16);
+  --accent-faint: rgba(255, 181, 71, 0.07);
+  --accent-line: rgba(255, 181, 71, 0.35);
+  --glow-accent: 0 0 0 1px var(--accent-dim), 0 0 28px -6px rgba(255, 181, 71, 0.55);
+  --glow-soft: 0 0 34px -12px rgba(255, 181, 71, 0.5);
+}
+
+:root[data-accent="emerald"] {
+  --accent: #4ade80;
+  --accent-bright: #9af5bd;
+  --accent-deep: #1f9d55;
+  --accent-dim: rgba(74, 222, 128, 0.16);
+  --accent-faint: rgba(74, 222, 128, 0.07);
+  --accent-line: rgba(74, 222, 128, 0.35);
+  --glow-accent: 0 0 0 1px var(--accent-dim), 0 0 28px -6px rgba(74, 222, 128, 0.55);
+  --glow-soft: 0 0 34px -12px rgba(74, 222, 128, 0.5);
+}
+
+:root[data-accent="violet"] {
+  --accent: #a78bfa;
+  --accent-bright: #d2c4ff;
+  --accent-deep: #7c5cd6;
+  --accent-dim: rgba(167, 139, 250, 0.16);
+  --accent-faint: rgba(167, 139, 250, 0.07);
+  --accent-line: rgba(167, 139, 250, 0.35);
+  --glow-accent: 0 0 0 1px var(--accent-dim), 0 0 28px -6px rgba(167, 139, 250, 0.55);
+  --glow-soft: 0 0 34px -12px rgba(167, 139, 250, 0.5);
+}

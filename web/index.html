@@ -1,1 +1,100 @@
-<!doctype html><html><head><meta charset="utf-8"><title>JARVIS</title></head><body>Placeholder - wird in Stufe 3 ersetzt.</body></html>
+<!doctype html>
+<html lang="de" data-accent="ice">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#07090e" />
+  <meta name="description" content="JARVIS — persönlicher KI-Assistent mit Sprache, Gedächtnis, Agenten und PC-Steuerung" />
+  <title>JARVIS</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png" />
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/animations.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/orb.css" />
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <div class="app" id="app" data-activity="visible">
+    <header class="topbar">
+      <button class="btn btn--icon btn--ghost nav__toggle" id="nav-toggle"
+              aria-label="Navigation ein-/ausblenden">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+      </button>
+
+      <div class="brand">
+        <span class="brand__mark">
+          <span class="orb orb--sm" id="topbar-orb" data-state="IDLE">
+            <span class="orb__halo"></span>
+            <svg class="orb__svg" viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="orb__ring orb__ring--mid" cx="50" cy="50" r="42" />
+            </svg>
+            <span class="orb__core"></span>
+          </span>
+        </span>
+        <span class="brand__name" id="brand-name">JARVIS</span>
+      </div>
+
+      <div class="topbar__meta">
+        <span class="pill" id="status-pill" title="Aktueller Zustand">
+          <span class="dot"></span><span id="status-text">Bereit</span>
+        </span>
+        <span class="pill hidden" id="model-pill" title="Aktives Modell"></span>
+        <span class="pill hidden" id="task-pill" title="Laufende Aufgabe"></span>
+        <span class="pill pill--danger hidden" id="stopped-pill" title="Not-Stopp ist aktiv">
+          <span class="dot dot--live"></span>Not-Stopp
+        </span>
+        <button class="btn btn--icon btn--ghost" id="activity-toggle"
+                aria-label="Aktivitätsleiste ein-/ausblenden" title="Aktivität">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12h4l3 8 4-16 3 8h4" />
+          </svg>
+        </button>
+        <button class="btn btn--sm btn--stop" id="emergency-btn" title="Alle Aktionen sofort stoppen">
+          STOP
+        </button>
+      </div>
+    </header>
+
+    <nav class="nav" id="nav" aria-label="Hauptnavigation"></nav>
+
+    <main class="main" id="main">
+      <div class="view" id="view"></div>
+    </main>
+
+    <aside class="activity" id="activity" aria-label="Aktivität">
+      <div class="activity__header">
+        <strong class="small">Aktivität</strong>
+        <div class="activity__tabs btn-group" role="group" aria-label="Aktivitätsansicht">
+          <button class="btn" data-activity-tab="events" aria-pressed="true">Verlauf</button>
+          <button class="btn" data-activity-tab="tools" aria-pressed="false">Werkzeuge</button>
+          <button class="btn" data-activity-tab="health" aria-pressed="false">Status</button>
+        </div>
+      </div>
+      <div class="activity__body" id="activity-body"></div>
+    </aside>
+  </div>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+  <div id="dialog-root"></div>
+
+  <noscript>
+    <div style="padding:2rem;font-family:sans-serif;color:#e8eef7">
+      JARVIS braucht JavaScript. Bitte aktiviere es, um die Oberfläche zu nutzen.
+    </div>
+  </noscript>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
