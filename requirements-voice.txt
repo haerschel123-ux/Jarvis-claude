@@ -1,0 +1,14 @@
+# Optional voice stack (Spec §3, §4, §5).
+# JARVIS starts and runs fine without these; voice features report as unavailable instead.
+#
+# Licensing note (see docs/LICENSES.md):
+#   - piper-tts engine is GPL-3.0 (OHF-Voice/piper1-gpl); it is used as an isolated
+#     optional backend behind voice/tts.py so the JARVIS core stays independent of it.
+#   - openWakeWord pretrained models are CC BY-NC-SA 4.0 (non-commercial use).
+faster-whisper>=1.1,<2.0
+sounddevice>=0.4.6
+numpy>=1.24
+silero-vad-notorch>=6.2
+openwakeword>=0.6.0
+onnxruntime>=1.16.1
+piper-tts>=1.2

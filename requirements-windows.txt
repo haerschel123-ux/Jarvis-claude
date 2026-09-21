@@ -1,0 +1,10 @@
+# Optional Windows desktop host stack (Spec §17, §19, §49, §50, §75).
+# Only install on Windows. JARVIS runs headless/server-only without these.
+pywebview>=5.0
+pystray>=0.19
+Pillow>=10.0
+psutil>=5.9
+keyring>=25.0
+pyautogui>=0.9.54
+pywinauto>=0.6.8; sys_platform == "win32"
+pygetwindow>=0.0.9

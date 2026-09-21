@@ -1,0 +1,38 @@
+# Secrets — never commit these (Spec §62, §91)
+.env
+.env.local
+*.key
+secrets.json
+data/secrets.enc
+
+# Runtime state
+data/
+logs/
+models/
+backups/
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Build output
+build/
+dist/
+*.spec.bak
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+tests/artifacts/

@@ -1,0 +1,10 @@
+# JARVIS core dependencies (Spec §115 - keep this list minimal).
+# Everything in here must work on Windows, Linux and macOS without native build tools.
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+pydantic>=2.7,<3.0
+httpx>=0.27,<1.0
+aiosqlite>=0.20,<1.0
+python-dotenv>=1.0,<2.0
+python-multipart>=0.0.9
+websockets>=12.0

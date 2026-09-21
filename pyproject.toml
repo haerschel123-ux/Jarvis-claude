@@ -1,0 +1,23 @@
+[project]
+name = "jarvis"
+version = "0.1.0"
+description = "JARVIS - a personal, local-first AI assistant with voice, memory, agents and PC control"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".venv", "build", "dist", "data", "logs", "models"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = [
+    "E501",   # line length is handled by the formatter
+    "B008",   # FastAPI uses function calls in argument defaults by design
+    "SIM105", # contextlib.suppress is not always clearer than try/except
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
