@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from core.config import Settings, get_settings
-from core.errors import ProviderError
+from core.errors import JarvisError
 from core.logging_setup import get_logger
 from core.secrets import secret_store
 from memory.database import Database, db
@@ -101,6 +101,8 @@ class ModelCatalog:
                     key,
                     label=provider_settings.custom_label,
                     treat_as_free=provider_settings.custom_is_free,
+                    supports_tools=provider_settings.custom_supports_tools,
+                    supports_vision=provider_settings.custom_supports_vision,
                 )
                 existing.is_local = provider_settings.custom_is_local
             else:
@@ -110,6 +112,8 @@ class ModelCatalog:
                     label=provider_settings.custom_label,
                     treat_as_free=provider_settings.custom_is_free,
                     treat_as_local=provider_settings.custom_is_local,
+                    supports_tools=provider_settings.custom_supports_tools,
+                    supports_vision=provider_settings.custom_supports_vision,
                 )
         else:
             self._providers.pop("custom", None)
@@ -170,7 +174,7 @@ class ModelCatalog:
                 continue
             try:
                 models = await provider.list_models()
-            except ProviderError as exc:
+            except JarvisError as exc:
                 errors[name] = exc.user_message or str(exc)
                 log.warning("Katalog-Aktualisierung für %s fehlgeschlagen: %s", name, exc)
                 continue

@@ -102,7 +102,7 @@ RULES: list[tuple[Intent, list[re.Pattern[str]], float]] = [
         _p(r"\bfenster\b.*\b(?:fokus|aktiv|wechsl)"),
     ], 0.85),
     (Intent.SYSTEM_ACTION, [
-        _p(r"\b(?:öffne|starte|schließe|beende|start|open|close)\b\s+\S"),
+        _p(r"\b(?:öffne|oeffne|starte|schlie(?:ß|ss)e|beende|start|open|close)\b\s+\S"),
         _p(r"\bprogramm\b"), _p(r"\banwendung\b"), _p(r"\bfahre?\b.*\bherunter\b"),
         _p(r"\bprozess(?:e)?\b"), _p(r"\btask[- ]?manager\b"),
     ], 0.8),
@@ -113,6 +113,8 @@ RULES: list[tuple[Intent, list[re.Pattern[str]], float]] = [
         _p(r"\b(?:python|javascript|typescript|rust|java|c\+\+|sql)\b"),
         _p(r"\bschreib(?:e)?\b.*\b(?:skript|script|programm|funktion)\b"),
         _p(r"\brepariere?\b.*\b(?:fehler|bug|code)\b"),
+        _p(r"\b(?:migriere|migration|deploye?|deployment|rollout)\b"),
+        _p(r"\b(?:datenbank|schema|api)\b.*\b(?:ändern|anpassen|migrieren|erweitern)\b"),
     ], 0.8),
     (Intent.FILE_TASK, [
         _p(r"\bdatei(?:en)?\b"), _p(r"\bordner\b"), _p(r"\bverzeichnis\b"),

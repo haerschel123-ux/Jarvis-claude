@@ -110,6 +110,11 @@ class ProviderSettings(BaseModel):
     # llama.cpp, vLLM) turn these on to make it usable under the free-only policy.
     custom_is_free: bool = False
     custom_is_local: bool = False
+    # Tri-state: None means "unknown", which is what an OpenAI-compatible endpoint actually
+    # reports. The user can declare what their server's model supports — JARVIS still does
+    # not guess, it is simply told.
+    custom_supports_tools: bool | None = None
+    custom_supports_vision: bool | None = None
     # Optional attribution headers OpenRouter uses for its app ranking.
     app_referer: str = "https://github.com/haerschel123-ux/Jarvis-claude"
     app_title: str = "JARVIS"

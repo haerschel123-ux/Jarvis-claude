@@ -22,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 
 load_dotenv()  # development convenience; the packaged app uses the OS credential store
 
+from agents.orchestrator import Orchestrator  # noqa: E402
 from api import (  # noqa: E402
     routes_chat,
     routes_memory,
@@ -55,6 +56,7 @@ from memory.manager import memory_manager  # noqa: E402
 from providers.catalog import catalog  # noqa: E402
 from tools import register_default_tools  # noqa: E402
 from tools.registry import RegistryToolExecutor  # noqa: E402
+from tools.registry import registry as tool_registry  # noqa: E402
 
 VERSION = "0.1.0"
 
@@ -135,6 +137,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     register_default_tools()
     assistant.set_tool_executor(RegistryToolExecutor())
     assistant.set_memory_hooks(_recall_memories, _capture_memories)
+    assistant.set_orchestrator(Orchestrator(tool_registry=tool_registry))
 
     # Anything left RUNNING by a crash is not running now; mark it so the UI is not stuck.
     await tasks.cleanup_stale()

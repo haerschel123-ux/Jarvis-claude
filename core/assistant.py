@@ -106,6 +106,7 @@ class TurnContext:
     project_instructions: str = ""
     explicit_model: str | None = None
     selection: ModelSelection | None = None
+    agent_decision: Any = None
     history: list[Message] = field(default_factory=list)
     working_messages: list[Message] = field(default_factory=list)
     tool_outcomes: list[ToolOutcome] = field(default_factory=list)
@@ -138,6 +139,7 @@ class AssistantCore:
         self._router = model_router or router
         self._conversations = conversation_store or conversations
         self._tools: ToolExecutor | None = None
+        self._orchestrator: Any | None = None
         self._recall: MemoryRecall | None = None
         self._capture: MemoryCapture | None = None
         self._state = AssistantState.IDLE
@@ -150,6 +152,10 @@ class AssistantCore:
     def set_memory_hooks(self, recall: MemoryRecall | None, capture: MemoryCapture | None) -> None:
         self._recall = recall
         self._capture = capture
+
+    def set_orchestrator(self, orchestrator: Any | None) -> None:
+        """Wire in the agent system. Without it, every request takes the direct path."""
+        self._orchestrator = orchestrator
 
     @property
     def state(self) -> AssistantState:
@@ -292,6 +298,15 @@ class AssistantCore:
         if context.history and context.history[-1].role == "user":
             context.history = context.history[:-1]
 
+        # How much machinery does this deserve? (Spec §30 — do not start five agents for a
+        # small question.) The decision is rule-based, so it costs nothing.
+        if self._orchestrator is not None:
+            decision = self._orchestrator.decide(
+                context.user_message, context.intent, settings, has_tools=bool(tool_specs)
+            )
+            context.agent_decision = decision
+            yield TurnEvent("agent.decision", decision.to_dict())
+
         memories: list[dict[str, Any]] = []
         if self._recall is not None and settings.memory.mode.value != "OFF":
             yield TurnEvent("status", {"stage": "Gedächtnis"})
@@ -328,6 +343,16 @@ class AssistantCore:
         context.working_messages = list(built.messages)
         yield TurnEvent("context.built", built.to_dict())
 
+        # An escalated request runs through the agent system; everything else keeps the
+        # direct, single-model path, which is faster and cheaper.
+        if self._orchestrator is not None and context.agent_decision is not None:
+            from agents.coordinator import Strategy
+
+            if context.agent_decision.strategy.value >= Strategy.SPECIALIST.value:
+                async for event in self._run_agents(context, memories):
+                    yield event
+                return
+
         async for event in self._run_model_loop(context, tool_specs):
             yield event
 
@@ -336,6 +361,48 @@ class AssistantCore:
                 await self._capture(context)
             except Exception:
                 log.exception("Gedächtnis-Erfassung fehlgeschlagen")
+
+    async def _run_agents(
+        self, context: TurnContext, memories: list[dict[str, Any]]
+    ) -> AsyncIterator[TurnEvent]:
+        """Hand the request to the agent system and stream its progress."""
+        from agents.base import AgentContext
+
+        decision = context.agent_decision
+        self._set_state(AssistantState.ACTING, agents=decision.agents)
+        yield TurnEvent("status", {"stage": _agent_stage(decision)})
+
+        agent_context = AgentContext(
+            goal=context.user_message,
+            settings=context.settings,
+            conversation_id=context.conversation_id,
+            project_id=context.project_id,
+            project_instructions=context.project_instructions,
+            history=context.history,
+            memories=memories,
+        )
+        run = await self._orchestrator.run(decision, agent_context)
+
+        context.answer = run.text or "Der Agentenlauf hat kein Ergebnis geliefert."
+        context.usage = _sum_usage(step.usage for step in run.steps)
+        for step in run.steps:
+            yield TurnEvent("agent.step", step.to_dict())
+            context.tool_outcomes.extend(
+                ToolOutcome(call_id="", tool=name, ok=True, content="")
+                for name in step.tool_calls
+            )
+
+        yield TurnEvent("delta", {"text": context.answer})
+        await self._conversations.add_message(
+            context.conversation_id, "assistant", context.answer,
+            trust="system",
+            model_id=run.steps[-1].model if run.steps else None,
+            agent=decision.agents[0] if decision.agents else "coordinator",
+            prompt_tokens=context.usage.prompt_tokens,
+            completion_tokens=context.usage.completion_tokens,
+            cost_usd=context.usage.cost_usd,
+            error=None if run.ok else "agent run failed",
+        )
 
     async def _run_model_loop(
         self, context: TurnContext, tool_specs: list[ToolSpec]
@@ -465,6 +532,18 @@ class AssistantCore:
                 log.exception("Unerwarteter Fehler bei Modell %s", model.key)
 
         raise last_error or ProviderError("Kein Modell konnte antworten")
+
+
+def _agent_stage(decision: Any) -> str:
+    names = " → ".join(decision.agents) if decision.agents else "Agent"
+    return f"Agenten arbeiten: {names}"
+
+
+def _sum_usage(items) -> Usage:  # noqa: ANN001
+    total = Usage()
+    for usage in items:
+        total = _add_usage(total, usage)
+    return total
 
 
 def _add_usage(left: Usage, right: Usage) -> Usage:

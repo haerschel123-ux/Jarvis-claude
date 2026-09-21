@@ -40,6 +40,8 @@ class OpenAICompatibleProvider(ChatProvider):
         label: str = "Custom API",
         treat_as_free: bool = False,
         treat_as_local: bool = False,
+        supports_tools: bool | None = None,
+        supports_vision: bool | None = None,
         timeout: float = 180.0,
         client: httpx.AsyncClient | None = None,
     ) -> None:
@@ -48,6 +50,8 @@ class OpenAICompatibleProvider(ChatProvider):
         self._api_key = api_key
         self._treat_as_free = treat_as_free
         self.is_local = treat_as_local
+        self._supports_tools = supports_tools
+        self._supports_vision = supports_vision
         self._timeout = timeout
         self._client = client
         self._owns_client = client is None
@@ -59,6 +63,8 @@ class OpenAICompatibleProvider(ChatProvider):
         *,
         label: str | None = None,
         treat_as_free: bool | None = None,
+        supports_tools: bool | None = None,
+        supports_vision: bool | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self._api_key = api_key
@@ -66,6 +72,8 @@ class OpenAICompatibleProvider(ChatProvider):
             self.label = label
         if treat_as_free is not None:
             self._treat_as_free = treat_as_free
+        self._supports_tools = supports_tools
+        self._supports_vision = supports_vision
 
     def _headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
@@ -128,14 +136,14 @@ class OpenAICompatibleProvider(ChatProvider):
                     id=str(model_id),
                     name=str(model_id),
                     # A plain OpenAI-compatible server publishes no capability metadata, so
-                    # everything stays Unknown instead of being assumed (Spec §8).
+                    # everything stays Unknown unless the user declared it (Spec §8).
                     context_length=None,
                     price_prompt="0" if self._treat_as_free else None,
                     price_completion="0" if self._treat_as_free else None,
                     is_free=self._treat_as_free,
                     is_local=self.is_local,
-                    supports_tools=None,
-                    supports_vision=None,
+                    supports_tools=self._supports_tools,
+                    supports_vision=self._supports_vision,
                     supports_structured=None,
                     supports_reasoning=None,
                     description=self.label,

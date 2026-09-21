@@ -240,6 +240,36 @@ function providerSection(settings, secrets, backend) {
         switchControl(settings.providers.custom_is_free,
           (value) => patch("providers.custom_is_free", value)),
       ),
+      el("div", { class: "spread" },
+        el("div", {},
+          el("div", { class: "small" }, "Läuft lokal"),
+          el("div", { class: "field__hint" },
+            "Zählt dann als lokales Modell und bleibt im Offline-Modus nutzbar."),
+        ),
+        switchControl(settings.providers.custom_is_local,
+          (value) => patch("providers.custom_is_local", value)),
+      ),
+      el("div", { class: "field" },
+        el("span", { class: "field__label" }, "Kann Werkzeuge aufrufen?"),
+        el("span", { class: "field__hint" },
+          "Ein OpenAI-kompatibler Server meldet seine Fähigkeiten nicht. JARVIS rät nicht — " +
+          "du kannst es ihm sagen. Bei „unbekannt“ wird der Server für Werkzeugaufgaben nicht gewählt."),
+        segmented(
+          [{ value: "unknown", label: "Unbekannt" }, { value: "yes", label: "Ja" },
+           { value: "no", label: "Nein" }],
+          triLabel(settings.providers.custom_supports_tools),
+          (value) => patch("providers.custom_supports_tools", triValue(value)),
+        ),
+      ),
+      el("div", { class: "field" },
+        el("span", { class: "field__label" }, "Kann Bilder verarbeiten?"),
+        segmented(
+          [{ value: "unknown", label: "Unbekannt" }, { value: "yes", label: "Ja" },
+           { value: "no", label: "Nein" }],
+          triLabel(settings.providers.custom_supports_vision),
+          (value) => patch("providers.custom_supports_vision", triValue(value)),
+        ),
+      ),
       secretField("github_token"),
       secretField("discord_bot_token"),
       secretField("nitrado_token"),
@@ -368,6 +398,15 @@ function appearanceSection(settings) {
       ),
     ),
   );
+}
+
+/* The capability flags are genuinely tri-state: unknown is a real answer, not a default. */
+function triLabel(value) {
+  return value === true ? "yes" : value === false ? "no" : "unknown";
+}
+
+function triValue(label) {
+  return label === "yes" ? true : label === "no" ? false : null;
 }
 
 function selectFrom(options, current, onChange) {
