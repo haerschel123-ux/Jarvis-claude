@@ -18,7 +18,7 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function request(path, { method = "GET", body, signal, headers } = {}) {
+async function apiRequest(path, { method = "GET", body, signal, headers } = {}) {
   let response;
   try {
     response = await fetch(path, {
@@ -58,26 +58,26 @@ export const api = {
   },
 
   /* --- system --- */
-  health: (refresh = false) => request(`/api/health${refresh ? "?refresh=true" : ""}`),
-  status: () => request("/api/status"),
-  platform: () => request("/api/platform"),
-  eventHistory: (limit = 100) => request(`/api/events/history?limit=${limit}`),
+  health: (refresh = false) => apiRequest(`/api/health${refresh ? "?refresh=true" : ""}`),
+  status: () => apiRequest("/api/status"),
+  platform: () => apiRequest("/api/platform"),
+  eventHistory: (limit = 100) => apiRequest(`/api/events/history?limit=${limit}`),
 
   /* --- chat --- */
-  chatDefaults: () => request("/api/chat/defaults"),
-  conversations: (limit = 50) => request(`/api/chat/conversations?limit=${limit}`),
-  conversation: (id) => request(`/api/chat/conversations/${id}`),
+  chatDefaults: () => apiRequest("/api/chat/defaults"),
+  conversations: (limit = 50) => apiRequest(`/api/chat/conversations?limit=${limit}`),
+  conversation: (id) => apiRequest(`/api/chat/conversations/${id}`),
   createConversation: (title = "") =>
-    request(`/api/chat/conversations?title=${encodeURIComponent(title)}`, { method: "POST" }),
+    apiRequest(`/api/chat/conversations?title=${encodeURIComponent(title)}`, { method: "POST" }),
   renameConversation: (id, title) =>
-    request(`/api/chat/conversations/${id}?title=${encodeURIComponent(title)}`, { method: "PATCH" }),
-  deleteConversation: (id) => request(`/api/chat/conversations/${id}`, { method: "DELETE" }),
+    apiRequest(`/api/chat/conversations/${id}?title=${encodeURIComponent(title)}`, { method: "PATCH" }),
+  deleteConversation: (id) => apiRequest(`/api/chat/conversations/${id}`, { method: "DELETE" }),
   truncateConversation: (id, afterMessageId) =>
-    request(`/api/chat/conversations/${id}/truncate?after_message_id=${afterMessageId}`,
+    apiRequest(`/api/chat/conversations/${id}/truncate?after_message_id=${afterMessageId}`,
             { method: "POST" }),
 
   /* --- models --- */
-  providers: () => request("/api/providers"),
+  providers: () => apiRequest("/api/providers"),
   models: (filters = {}) => {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(filters)) {
@@ -86,48 +86,48 @@ export const api = {
       }
     }
     const suffix = query.toString();
-    return request(`/api/models${suffix ? `?${suffix}` : ""}`);
+    return apiRequest(`/api/models${suffix ? `?${suffix}` : ""}`);
   },
-  refreshModels: () => request("/api/models/refresh?force=true", { method: "POST" }),
+  refreshModels: () => apiRequest("/api/models/refresh?force=true", { method: "POST" }),
   previewSelection: (taskKind = "chat") =>
-    request(`/api/models/select?task_kind=${encodeURIComponent(taskKind)}`, { method: "POST" }),
+    apiRequest(`/api/models/select?task_kind=${encodeURIComponent(taskKind)}`, { method: "POST" }),
 
   /* --- settings and secrets --- */
-  settings: () => request("/api/settings"),
-  updateSettings: (patch) => request("/api/settings", { method: "PUT", body: { patch } }),
-  resetSettings: () => request("/api/settings/reset", { method: "POST" }),
-  secrets: () => request("/api/secrets"),
-  setSecret: (name, value) => request("/api/secrets", { method: "PUT", body: { name, value } }),
-  deleteSecret: (name) => request(`/api/secrets/${encodeURIComponent(name)}`, { method: "DELETE" }),
-  permissions: () => request("/api/permissions"),
-  setPermissions: (body) => request("/api/permissions", { method: "PUT", body }),
-  setup: () => request("/api/setup"),
-  completeSetup: () => request("/api/setup/complete", { method: "POST" }),
+  settings: () => apiRequest("/api/settings"),
+  updateSettings: (patch) => apiRequest("/api/settings", { method: "PUT", body: { patch } }),
+  resetSettings: () => apiRequest("/api/settings/reset", { method: "POST" }),
+  secrets: () => apiRequest("/api/secrets"),
+  setSecret: (name, value) => apiRequest("/api/secrets", { method: "PUT", body: { name, value } }),
+  deleteSecret: (name) => apiRequest(`/api/secrets/${encodeURIComponent(name)}`, { method: "DELETE" }),
+  permissions: () => apiRequest("/api/permissions"),
+  setPermissions: (body) => apiRequest("/api/permissions", { method: "PUT", body }),
+  setup: () => apiRequest("/api/setup"),
+  completeSetup: () => apiRequest("/api/setup/complete", { method: "POST" }),
 
   /* --- tools --- */
-  tools: () => request("/api/tools"),
+  tools: () => apiRequest("/api/tools"),
   executeTool: (tool, args = {}, conversationId = null) =>
-    request("/api/tools/execute", {
+    apiRequest("/api/tools/execute", {
       method: "POST",
       body: { tool, arguments: args, conversation_id: conversationId },
     }),
-  toolRuns: (limit = 50) => request(`/api/tools/runs?limit=${limit}`),
-  pendingPermissions: () => request("/api/permissions/pending"),
+  toolRuns: (limit = 50) => apiRequest(`/api/tools/runs?limit=${limit}`),
+  pendingPermissions: () => apiRequest("/api/permissions/pending"),
   answerPermission: (id, answer) =>
-    request("/api/permissions/answer", { method: "POST", body: { id, answer } }),
-  grants: () => request("/api/permissions/grants"),
+    apiRequest("/api/permissions/answer", { method: "POST", body: { id, answer } }),
+  grants: () => apiRequest("/api/permissions/grants"),
   revokeGrant: (capability, scope) => {
     const query = capability && scope
       ? `?capability=${encodeURIComponent(capability)}&scope=${encodeURIComponent(scope)}`
       : "";
-    return request(`/api/permissions/grants${query}`, { method: "DELETE" });
+    return apiRequest(`/api/permissions/grants${query}`, { method: "DELETE" });
   },
 
   /* --- emergency stop --- */
-  emergencyState: () => request("/api/emergency"),
+  emergencyState: () => apiRequest("/api/emergency"),
   emergencyStop: (reason = "Über die Oberfläche ausgelöst") =>
-    request(`/api/emergency/stop?reason=${encodeURIComponent(reason)}`, { method: "POST" }),
-  emergencyRelease: () => request("/api/emergency/release", { method: "POST" }),
+    apiRequest(`/api/emergency/stop?reason=${encodeURIComponent(reason)}`, { method: "POST" }),
+  emergencyRelease: () => apiRequest("/api/emergency/release", { method: "POST" }),
 
   /* --- chat streaming (SSE over POST, so it cannot use EventSource) --- */
   async streamChat({ message, conversationId, projectId, model, images = [] }, onEvent, signal) {
@@ -176,3 +176,44 @@ export const api = {
     }
   },
 };
+
+/* --- stage 4: memory, tasks, reminders, backups --------------------------------------- */
+
+Object.assign(api, {
+  memories: (filters = {}) => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value) query.set(key, String(value));
+    }
+    const suffix = query.toString();
+    return apiRequest(`/api/memory${suffix ? `?${suffix}` : ""}`);
+  },
+  createMemory: (body) => apiRequest("/api/memory", { method: "POST", body }),
+  updateMemory: (id, body) => apiRequest(`/api/memory/${id}`, { method: "PATCH", body }),
+  deleteMemory: (id) => apiRequest(`/api/memory/${id}`, { method: "DELETE" }),
+  searchMemories: (q, limit = 12) =>
+    apiRequest(`/api/memory/search?q=${encodeURIComponent(q)}&limit=${limit}`),
+  exportMemories: () => apiRequest("/api/memory/export/all"),
+  importMemories: (memories) =>
+    apiRequest("/api/memory/import", { method: "POST", body: { memories } }),
+
+  tasks: (activeOnly = false) => apiRequest(`/api/tasks?active_only=${activeOnly}`),
+  task: (id) => apiRequest(`/api/tasks/${id}`),
+  createTask: (body) => apiRequest("/api/tasks", { method: "POST", body }),
+  cancelTask: (id) => apiRequest(`/api/tasks/${id}/cancel`, { method: "POST" }),
+
+  reminders: (includeDisabled = false) =>
+    apiRequest(`/api/reminders?include_disabled=${includeDisabled}`),
+  createReminder: (body) => apiRequest("/api/reminders", { method: "POST", body }),
+  previewReminder: (text, timezone) =>
+    apiRequest(`/api/reminders/parse?text=${encodeURIComponent(text)}` +
+               `&timezone=${encodeURIComponent(timezone)}`, { method: "POST" }),
+  setReminderEnabled: (id, enabled) =>
+    apiRequest(`/api/reminders/${id}?enabled=${enabled}`, { method: "PATCH" }),
+  deleteReminder: (id) => apiRequest(`/api/reminders/${id}`, { method: "DELETE" }),
+
+  backups: () => apiRequest("/api/backups"),
+  createBackup: (label = "") =>
+    apiRequest(`/api/backups?label=${encodeURIComponent(label)}`, { method: "POST" }),
+  proactiveState: () => apiRequest("/api/proactive"),
+});

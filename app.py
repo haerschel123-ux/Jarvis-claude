@@ -24,13 +24,16 @@ load_dotenv()  # development convenience; the packaged app uses the OS credentia
 
 from api import (  # noqa: E402
     routes_chat,
+    routes_memory,
     routes_models,
     routes_settings,
+    routes_tasks,
     routes_tools,
     ws_events,
 )
 from core import health  # noqa: E402
 from core.assistant import assistant  # noqa: E402
+from core.backup import backups  # noqa: E402
 from core.config import get_settings, settings_store  # noqa: E402
 from core.errors import (  # noqa: E402
     ConfigurationError,
@@ -45,7 +48,10 @@ from core.events import EventType, event_bus  # noqa: E402
 from core.logging_setup import get_logger, setup_logging  # noqa: E402
 from core.paths import PATHS  # noqa: E402
 from core.platform_info import summary as platform_summary  # noqa: E402
+from core.scheduler import scheduler  # noqa: E402
+from core.tasks import tasks  # noqa: E402
 from memory.database import db  # noqa: E402
+from memory.manager import memory_manager  # noqa: E402
 from providers.catalog import catalog  # noqa: E402
 from tools import register_default_tools  # noqa: E402
 from tools.registry import RegistryToolExecutor  # noqa: E402
@@ -55,6 +61,26 @@ VERSION = "0.1.0"
 log = get_logger("app")
 
 START_TIME = time.time()
+
+
+async def _recall_memories(query: str, limit: int) -> list[dict[str, Any]]:
+    """Memory hook: what JARVIS already knows that is relevant to this message."""
+    try:
+        return await memory_manager.recall(query, limit)
+    except Exception:
+        log.exception("Gedächtnisabruf fehlgeschlagen")
+        return []
+
+
+async def _capture_memories(context) -> None:  # noqa: ANN001 - the assistant's TurnContext
+    """Memory hook: run the pipeline over the finished exchange."""
+    await memory_manager.capture_exchange(
+        context.user_message,
+        context.answer,
+        conversation_id=context.conversation_id,
+        project_id=context.project_id,
+        settings=context.settings,
+    )
 
 
 async def _startup_background(app: FastAPI) -> None:
@@ -68,6 +94,12 @@ async def _startup_background(app: FastAPI) -> None:
                 event_bus.emit(EventType.MODELS_REFRESHED, total=await catalog.count_all())
         except Exception:
             log.exception("Modellkatalog konnte beim Start nicht aktualisiert werden")
+
+        try:
+            if await backups.is_due():
+                await backups.create(label="auto")
+        except Exception:
+            log.exception("Automatisches Backup fehlgeschlagen")
 
         result = await health.run_all()
         app.state.health = result
@@ -102,6 +134,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # model-issued tool call through the registry's permission and audit path.
     register_default_tools()
     assistant.set_tool_executor(RegistryToolExecutor())
+    assistant.set_memory_hooks(_recall_memories, _capture_memories)
+
+    # Anything left RUNNING by a crash is not running now; mark it so the UI is not stuck.
+    await tasks.cleanup_stale()
+    # The scheduler fires reminders that came due while JARVIS was off (Spec §27).
+    await scheduler.start()
     health.register_check("providers", _provider_health)
 
     app.state.settings = settings
@@ -114,6 +152,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
+        await scheduler.stop()
         task: asyncio.Task | None = getattr(app.state, "background", None)
         if task and not task.done():
             task.cancel()
@@ -179,6 +218,8 @@ def create_app() -> FastAPI:
     app.include_router(routes_models.router)
     app.include_router(routes_settings.router)
     app.include_router(routes_tools.router)
+    app.include_router(routes_memory.router)
+    app.include_router(routes_tasks.router)
     _register_core_routes(app)
     _mount_web_ui(app)
     return app

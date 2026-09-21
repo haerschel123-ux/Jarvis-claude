@@ -18,6 +18,7 @@ def register_default_tools(target: ToolRegistry | None = None) -> ToolRegistry:
 
     from tools.files import FILE_TOOLS
     from tools.git_tools import GIT_TOOLS
+    from tools.memory_tools import MEMORY_TOOLS, SCHEDULE_TOOLS
     from tools.terminal import TERMINAL_TOOLS
     from tools.web import WEB_TOOLS
 
@@ -29,6 +30,10 @@ def register_default_tools(target: ToolRegistry | None = None) -> ToolRegistry:
         target.register(tool, tags={"web"})
     for tool in GIT_TOOLS:
         target.register(tool, tags={"git", "files"})
+    for tool in MEMORY_TOOLS:
+        target.register(tool, tags={"memory"})
+    for tool in SCHEDULE_TOOLS:
+        target.register(tool, tags={"schedule"})
 
     unavailable = [t.name for t in target.all(include_unavailable=True) if not t.available]
     log.info(

@@ -46,6 +46,7 @@ def test_index_is_served(client: TestClient) -> None:
         "/js/ui.js", "/js/router.js", "/js/activity.js",
         "/js/views/chat.js", "/js/views/dashboard.js", "/js/views/models.js",
         "/js/views/tools.js", "/js/views/settings.js", "/js/views/placeholder.js",
+        "/js/views/memory.js", "/js/views/tasks.js", "/js/views/automations.js",
         "/manifest.json", "/sw.js", "/assets/icons/icon.svg",
     ],
 )

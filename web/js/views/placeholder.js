@@ -23,50 +23,6 @@ const PLANNED = {
     hint: "Bis dahin kannst du Arbeitsordner unter Einstellungen → Freigegebene Ordner hinterlegen.",
     goto: { label: "Zu den Einstellungen", route: "settings" },
   },
-  tasks: {
-    title: "Aufgaben",
-    subtitle: "Mehrstufige Aufträge mit Plan, Fortschritt und Abbruch",
-    ready: [
-      "Task- und Schritt-Tabellen inklusive Status und Hierarchie",
-      "Abbrechbarkeit und Zeitlimits in der Werkzeug-Engine",
-    ],
-    pending: [
-      "Planer, Ausführung und Prüfung als Agenten",
-      "Fortschrittsanzeige und Abbruch in der Oberfläche",
-      "Geplante und wiederkehrende Aufgaben",
-    ],
-    hint: "Laufende Werkzeugaufrufe siehst du bereits in der Aktivitätsleiste.",
-    goto: { label: "Zu den Werkzeugen", route: "tools" },
-  },
-  memory: {
-    title: "Gedächtnis",
-    subtitle: "Was sich JARVIS langfristig über dich merkt",
-    ready: [
-      "Gedächtnistabelle mit Volltextsuche, Wichtigkeit und Kategorien",
-      "Filter gegen Passwörter, Schlüssel und Tokens",
-    ],
-    pending: [
-      "Automatische Erfassung aus Unterhaltungen",
-      "Suchen, Bearbeiten, Anheften, Löschen, Export",
-    ],
-    hint: "Der Modus steht bereits auf AUTO mit aktivem Secret-Filter.",
-    goto: { label: "Zu den Einstellungen", route: "settings" },
-  },
-  automations: {
-    title: "Automationen",
-    subtitle: "Erinnerungen, geplante Prüfungen und eigene Sprachbefehle",
-    ready: [
-      "Tabellen für Erinnerungen, Automationen und eigene Sprachbefehle",
-      "Zeitzonensichere Ablage der nächsten Ausführung",
-    ],
-    pending: [
-      "Scheduler, der Erinnerungen auslöst",
-      "Bedingte und wiederkehrende Aufgaben",
-      "Verwaltung eigener Sprachbefehle",
-    ],
-    hint: "",
-    goto: null,
-  },
   integrations: {
     title: "Integrationen",
     subtitle: "GitHub, Discord, DayZ/Nitrado, Google und Home Assistant",

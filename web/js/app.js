@@ -9,9 +9,12 @@ import { setState, state, subscribe } from "./state.js";
 import { confirmDialog, permissionDialog, setOrbState, toast } from "./ui.js";
 import { animateOrbs, newConversation, openConversation, renderChat, renderMessages } from "./views/chat.js";
 import { renderDashboard } from "./views/dashboard.js";
+import { renderAutomations } from "./views/automations.js";
+import { renderMemory } from "./views/memory.js";
 import { renderModels } from "./views/models.js";
 import { renderPlaceholder } from "./views/placeholder.js";
 import { applyAppearance, renderSettings } from "./views/settings.js";
+import { renderTasks } from "./views/tasks.js";
 import { renderTools } from "./views/tools.js";
 
 const openPermissionDialogs = new Map();
@@ -27,7 +30,10 @@ async function boot() {
   onRoute("models", renderModels);
   onRoute("tools", renderTools);
   onRoute("settings", renderSettings);
-  for (const key of ["projects", "tasks", "memory", "automations", "integrations"]) {
+  onRoute("memory", renderMemory);
+  onRoute("tasks", renderTasks);
+  onRoute("automations", renderAutomations);
+  for (const key of ["projects", "integrations"]) {
     onRoute(key, (container) => renderPlaceholder(container, key));
   }
 
